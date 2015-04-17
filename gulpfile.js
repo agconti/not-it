@@ -32,7 +32,7 @@ gulp.task('sass', function () {
 gulp.task('js', function () {
   return gulp.src('js/**/*.js')
     .pipe(changed('public'))
-    .pipe(uglify().on('error', console.error.bind(console)))
+    // .pipe(uglify().on('error', console.error.bind(console)))
     .pipe(gulp.dest('public'))
     .pipe(reload({stream:true}))
 })
