@@ -1,6 +1,7 @@
 // import dependencies
 var Engine = famous.core.Engine
   , Modifier = famous.core.Modifier
+  , StateModifier = famous.modifiers.StateModifier
   , Transform = famous.core.Transform
   , Surface = famous.core.Surface
   , GenericSync = famous.inputs.GenericSync
@@ -12,7 +13,7 @@ var Engine = famous.core.Engine
   
   // view 
   , mainContext = Engine.createContext()
-  
+
   , angle = 0
   , index = 0
 
@@ -38,10 +39,7 @@ var surface = surfaceFactory()
 
 // Modifers
 
-var touchModifier = new Modifier({
-  origin: [0.5, 0.5]
-, align: [0.5, 0.15]
-}) 
+var rotateModifer = new Modifier() 
 
 
 // Interaction 
@@ -56,20 +54,28 @@ sync.on('start', function (e) {
   var surface = surfaceFactory()
     , draggable = new Draggable()
     , touchPosition = new Modifier({
-        align: [ e.clientX / window.innerWidth
+        origin: [0.5, 0.5]
+      , align: [ e.clientX / window.innerWidth
                , e.clientY / window.innerHeight
                ]
       })
+    , opacity = new StateModifier()
   surface.setContent('start -- new ' +  index)
   surface.properties.background = randomColor()
   surface.pipe(draggable)
-  touchState
+  
+  mainContext
+    .add(opacity)
     .add(draggable)
     .add(touchPosition)
+    .add(rotateModifer)
     .add(surface)
 
   // rotate all touch surfaces 
-  touchModifier.transformFrom(rotate)
+  rotateModifer.transformFrom(rotate)
+  sync.on('end', function(){
+    opacity.setOpacity(0, tranformOptions)
+  })
 })
 
 sync.on('update', function (e) {
@@ -79,20 +85,18 @@ sync.on('update', function (e) {
 sync.on('end', function (e) {
 
   // stop all touch modifiers
-  touchModifier.halt()
+  rotateModifer.halt()
 })
 
 
 function rotate () {
     angle += 0.02
+    console.log(angle)
     return Transform.rotateZ(angle)
 }
 
 
 function randomColor () {
-  return '#'+Math.floor(Math.random()*16777215).toString(16)
+  return '#' + Math.floor(Math.random()*16777215).toString(16)
 }
 
-
-// Tree
-var touchState = mainContext.add(touchModifier)
